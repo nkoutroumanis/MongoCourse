@@ -19,7 +19,11 @@ import java.util.stream.Stream;
 public class LoadData {
 
     public static void main(String args[]){
-        LoadData ld = new LoadData();
+        LoadData ld = new LoadData("./hotels/hotels.txt");
+        ld.loadDataIn2dSphereForm();
+
+        //db.collection.createIndex( { location : "2dsphere" } )
+        //db.collection.createIndex( { coordinates : "2d" } )
 
     }
 
@@ -34,7 +38,7 @@ public class LoadData {
     public void loadDataIn2dSphereForm(){
 
         MongoCredential credential = MongoCredential.createCredential("admin", "test", "abc123".toCharArray());
-        MongoClientOptions options = MongoClientOptions.builder()/*.sslEnabled(true)*/.build();
+        MongoClientOptions options = MongoClientOptions.builder().build();
         MongoClient mongoClient = new MongoClient(new ServerAddress("0.0.0.0", 27017), credential, options);
         MongoCollection m = mongoClient.getDatabase("test").getCollection("geoPoints");
 
@@ -46,10 +50,11 @@ public class LoadData {
 
             lines.forEach(line -> {
 
-                String[] separatedLine = line.split(";");
+                String[] separatedLine = line.split("|");
 
-                Document embeddedDoc = new Document("type","Point").append("coordinates", Arrays.asList(Float.parseFloat(separatedLine[numberOfColumnLongitude - 1]), Float.parseFloat(separatedLine[numberOfColumnLatitude - 1])));
-                docs.add( new Document("objectId", separatedLine[0]).append("location", embeddedDoc).append("date",dateFormat.parse(separatedLine[numberOfColumnDate - 1])));
+                //In Arrays.asList, the first argument should be lot and the second lat
+                Document embeddedDoc = new Document("type","Point").append("coordinates", Arrays.asList(Float.parseFloat(separatedLine[5]), Float.parseFloat(separatedLine[4])));
+                docs.add( new Document("id", separatedLine[0]).append("location", embeddedDoc).append("hotel",separatedLine[1]));
 
 
             });
@@ -65,9 +70,9 @@ public class LoadData {
     public void loadDataIn2dForm(){
 
         MongoCredential credential = MongoCredential.createCredential("admin", "test", "abc123".toCharArray());
-        MongoClientOptions options = MongoClientOptions.builder()/*.sslEnabled(true)*/.build();
+        MongoClientOptions options = MongoClientOptions.builder().build();
         MongoClient mongoClient = new MongoClient(new ServerAddress("0.0.0.0", 27017), credential, options);
-        MongoCollection m = mongoClient.getDatabase("test").getCollection("geoPoints");
+        MongoCollection m = mongoClient.getDatabase("test").getCollection("points");
 
         List<Document> docs = new ArrayList<>();
 
@@ -77,9 +82,10 @@ public class LoadData {
 
             lines.forEach(line -> {
 
-                String[] separatedLine = line.split(";");
+                String[] separatedLine = line.split("|");
 
-                docs.add( new Document("objectId", separatedLine[0]).append("coordinates", Arrays.asList(Float.parseFloat(separatedLine[numberOfColumnLongitude - 1]), Float.parseFloat(separatedLine[numberOfColumnLatitude - 1]))).append("date",dateFormat.parse(separatedLine[numberOfColumnDate - 1])));
+                //In Arrays.asList, the first argument should be lot and the second lat
+                docs.add( new Document("id", separatedLine[0]).append("coordinates", Arrays.asList(Float.parseFloat(separatedLine[5]), Float.parseFloat(separatedLine[4]))).append("hotel",separatedLine[1]));
 
 
             });
