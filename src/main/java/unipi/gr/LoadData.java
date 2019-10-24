@@ -66,6 +66,39 @@ public class LoadData {
             e.printStackTrace();
         }
     }
+    
+    private int prevPos = 0;
+    private int nextPos = 0;
+
+    private String getNextToken(String str) {
+        if (nextPos == str.length())
+            return null;
+        if (nextPos != 0) {
+            prevPos = nextPos + 2;
+        }
+        nextPos = str.indexOf("\\|", prevPos);
+        if (nextPos < 0)
+            nextPos = str.length();
+        return str.substring(prevPos, nextPos);
+    }
+
+    private String getNextToken(String str, int skip) {
+        if (skip < 0) {
+            return null;
+        }
+        int count = 0;
+        String res;
+        do {
+            res = getNextToken(str);
+        }
+        while ((count++ < skip) && (res != null));
+        return res;
+    }
+
+    private void resetParser() {
+        prevPos = 0;
+        nextPos = 0;
+    }
 
     public void loadDataIn2dForm(){
 
@@ -81,11 +114,16 @@ public class LoadData {
             Stream<String> lines = Files.lines(Paths.get(txtPath));
 
             lines.forEach(line -> {
-
-                String[] separatedLine = line.split("|");
+                resetParser();
+                //String[] separatedLine = line.split("|");
+                String name = getNextToken(line);
+                String address = getNextToken(line);
+                String latitude = getNextToken(line, 2);
+                String longitude = getNextToken(line);
 
                 //In Arrays.asList, the first argument should be lot and the second lat
-                docs.add( new Document("id", separatedLine[0]).append("coordinates", Arrays.asList(Float.parseFloat(separatedLine[5]), Float.parseFloat(separatedLine[4]))).append("hotel",separatedLine[1]));
+                docs.add( new Document("id", name).append("coordinates",
+                                                                      Arrays.asList(Float.parseFloat(longitude), Float.parseFloat(latitude))).append("hotel",address));
 
 
             });
